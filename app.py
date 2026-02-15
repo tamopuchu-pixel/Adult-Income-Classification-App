@@ -118,6 +118,11 @@ if uploaded_file is not None:
             lambda x: 1 if x.strip() == ">50K" else 0
         )
 
+        # Strip whitespace from ALL string columns
+        for col in df.select_dtypes(include="object").columns:
+            df[col] = df[col].str.strip()
+
+
         df = pd.get_dummies(df, drop_first=True)
 
         X_test = df.drop("income", axis=1)
