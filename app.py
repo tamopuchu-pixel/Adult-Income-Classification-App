@@ -87,8 +87,12 @@ else:
 # 📤 Upload Test Dataset
 # ==========================================
 
-st.header("Upload Test Dataset (CSV)")
-uploaded_file = st.file_uploader("Upload CSV File", type=["csv"])
+st.header("Upload Test Dataset")
+uploaded_file = st.file_uploader(
+    "Upload Test Dataset",
+    type=["csv", "test", "txt"]
+)
+
 
 if uploaded_file is not None:
 
