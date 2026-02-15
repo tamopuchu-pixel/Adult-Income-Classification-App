@@ -96,6 +96,13 @@ uploaded_file = st.file_uploader(
 
 if uploaded_file is not None:
 
+    column_names = [
+        "age", "workclass", "fnlwgt", "education", "education-num",
+        "marital-status", "occupation", "relationship", "race",
+        "sex", "capital-gain", "capital-loss", "hours-per-week",
+        "native-country", "income"
+    ]
+
     df = pd.read_csv(
         uploaded_file,
         header=None,
@@ -106,12 +113,7 @@ if uploaded_file is not None:
         skipinitialspace=True    # removes spaces after commas
     )
 
-    column_names = [
-        "age", "workclass", "fnlwgt", "education", "education-num",
-        "marital-status", "occupation", "relationship", "race",
-        "sex", "capital-gain", "capital-loss", "hours-per-week",
-        "native-country", "income"
-    ]
+    
 
     df.columns = column_names
 
