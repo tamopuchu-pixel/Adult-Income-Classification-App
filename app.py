@@ -138,7 +138,7 @@ if uploaded_file is not None:
             "Classification Threshold",
             min_value=0.0,
             max_value=1.0,
-            value=0.5,
+            value=0.39,
             step=0.01
         )
 
