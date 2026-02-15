@@ -37,7 +37,7 @@ st.write("Download test dataset or upload your own CSV file for evaluation.")
 # Load Saved Models & Artifacts
 # ==========================================
 
-MODEL_PATH = "Model"
+MODEL_PATH = "model"
 
 feature_columns = joblib.load(os.path.join(MODEL_PATH, "feature_columns.pkl"))
 scaler = joblib.load(os.path.join(MODEL_PATH, "scaler.pkl"))
