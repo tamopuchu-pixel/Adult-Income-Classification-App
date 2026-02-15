@@ -96,10 +96,15 @@ uploaded_file = st.file_uploader(
 
 if uploaded_file is not None:
 
-    df = pd.read_csv(uploaded_file, header=None)
-
-    # Remove first row (header present in adult.test)
-    df = df.iloc[1:]
+    df = pd.read_csv(
+        uploaded_file,
+        header=None,
+        names=column_names,
+        skiprows=1,              # skip first metadata row
+        sep=",",
+        engine="python",         # safer parser
+        skipinitialspace=True    # removes spaces after commas
+    )
 
     column_names = [
         "age", "workclass", "fnlwgt", "education", "education-num",
