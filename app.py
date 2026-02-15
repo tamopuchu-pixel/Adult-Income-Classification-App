@@ -200,10 +200,25 @@ if uploaded_file is not None:
 
         st.header("Classification Report")
 
-        report = classification_report(y_test, y_pred, output_dict=True)
+        report = classification_report(
+        y_test,
+        y_pred,
+        target_names=["<=50K", ">50K"],
+        output_dict=True
+        )
+
         report_df = pd.DataFrame(report).transpose()
 
+        report_df.index = [
+        "<=50K",
+        ">50K",
+        "Accuracy",
+        "Macro Avg",
+        "Weighted Avg"
+        ]
+
         st.dataframe(report_df)
+
 
     except Exception as e:
         st.error("Error processing file. Please upload a valid adult.test formatted file.")
