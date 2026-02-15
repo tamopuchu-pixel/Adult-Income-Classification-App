@@ -89,9 +89,9 @@ else:
 # Upload Dataset
 # ==========================================
 
-st.header("Upload Test Dataset")
+st.sidebar.header("Upload Test Dataset")
 
-uploaded_file = st.file_uploader(
+uploaded_file = st.sidebar.file_uploader(
     "Upload Test Dataset",
     type=["csv", "test", "txt"]
 )
@@ -121,8 +121,8 @@ if uploaded_file is not None:
         )
 
         if df.empty:
-            st.error("Uploaded file appears to be empty or corrupted.")
-            st.stop()
+            st.sidebar.error("Uploaded file appears to be empty or corrupted.")
+            st.sidebar.stop()
 
         # ==========================================
         # Data Cleaning
