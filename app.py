@@ -130,6 +130,23 @@ if uploaded_file is not None:
         y_pred = selected_model.predict(X_test_scaled)
         y_prob = selected_model.predict_proba(X_test_scaled)[:, 1]
 
+        #Debug start
+        st.subheader("🔍 Debug Information")
+
+        st.write("Shape of X_test_scaled:", X_test_scaled.shape)
+        st.write("Number of expected features:", len(feature_columns))
+        st.write("First 5 feature names:", feature_columns[:5])
+
+        st.write("Positive class rate in true labels:", np.mean(y_test))
+        st.write("Positive class prediction rate:", np.mean(y_pred))
+
+        st.write("Prediction distribution:")
+        st.write(pd.Series(y_pred).value_counts())
+
+
+
+        #Debug End
+
         # Metrics
         accuracy = accuracy_score(y_test, y_pred)
         auc = roc_auc_score(y_test, y_prob)
