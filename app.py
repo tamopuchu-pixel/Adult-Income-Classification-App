@@ -71,18 +71,18 @@ selected_model = models[selected_model_name]
 # Download Sample Dataset
 # ==========================================
 
-st.header("Download Sample Test Dataset")
+st.sidebar.header("Download Sample Test Dataset")
 
 if os.path.exists("Data/adult.test"):
     with open("Data/adult.test", "rb") as file:
-        st.download_button(
+        st.sidebar.download_button(
             label="Download adult.test",
             data=file,
             file_name="adult.test",
             mime="text/csv"
         )
 else:
-    st.warning("adult.test file not found in Data folder.")
+    st.sidebar.warning("adult.test file not found in Data folder.")
 
 
 # ==========================================
