@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 import joblib
 import os
+import io
 
 from sklearn.metrics import (
     accuracy_score,
@@ -30,7 +31,7 @@ import seaborn as sns
 st.set_page_config(page_title="Adult Income Classifier", layout="wide")
 
 st.title("Adult Income Classification App")
-st.write("Download test dataset or upload your own CSV file for evaluation.")
+st.write("Download the sample dataset or upload your own CSV file for evaluation.")
 
 
 # ==========================================
@@ -57,6 +58,7 @@ models = {
 # ==========================================
 
 st.sidebar.header("Model Selection")
+
 selected_model_name = st.sidebar.selectbox(
     "Choose a Model",
     list(models.keys())
@@ -66,7 +68,7 @@ selected_model = models[selected_model_name]
 
 
 # ==========================================
-# 📥 Download Test Dataset Feature
+# Download Sample Dataset
 # ==========================================
 
 st.header("Download Sample Test Dataset")
@@ -84,117 +86,128 @@ else:
 
 
 # ==========================================
-# 📤 Upload Test Dataset
+# Upload Dataset
 # ==========================================
 
 st.header("Upload Test Dataset")
+
 uploaded_file = st.file_uploader(
     "Upload Test Dataset",
     type=["csv", "test", "txt"]
 )
 
-
 if uploaded_file is not None:
 
-    column_names = [
-        "age", "workclass", "fnlwgt", "education", "education-num",
-        "marital-status", "occupation", "relationship", "race",
-        "sex", "capital-gain", "capital-loss", "hours-per-week",
-        "native-country", "income"
-    ]
+    try:
+        column_names = [
+            "age", "workclass", "fnlwgt", "education", "education-num",
+            "marital-status", "occupation", "relationship", "race",
+            "sex", "capital-gain", "capital-loss", "hours-per-week",
+            "native-country", "income"
+        ]
 
-    df = pd.read_csv(
-        uploaded_file,
-        header=None,
-        names=column_names,
-        skiprows=1,              # skip first metadata row
-        sep=",",
-        engine="python",         # safer parser
-        skipinitialspace=True    # removes spaces after commas
-    )
+        # 🔥 Safe file decoding (handles encoding issues)
+        file_content = uploaded_file.read().decode("utf-8", errors="ignore")
 
-    
+        # 🔥 Robust CSV reading
+        df = pd.read_csv(
+            io.StringIO(file_content),
+            header=None,
+            names=column_names,
+            skiprows=1,
+            sep=r",\s*",
+            engine="python",
+            on_bad_lines="skip"
+        )
 
-    df.columns = column_names
+        if df.empty:
+            st.error("Uploaded file appears to be empty or corrupted.")
+            st.stop()
 
-    # Clean
-    df.replace("?", np.nan, inplace=True)
-    df.dropna(inplace=True)
+        # ==========================================
+        # Data Cleaning
+        # ==========================================
 
-    df["income"] = df["income"].str.replace(".", "", regex=False)
+        df.replace("?", np.nan, inplace=True)
+        df.dropna(inplace=True)
 
-    df.drop("fnlwgt", axis=1, inplace=True)
+        df["income"] = df["income"].str.replace(".", "", regex=False)
+        df.drop("fnlwgt", axis=1, inplace=True)
 
-    df["income"] = df["income"].apply(
-        lambda x: 1 if x.strip() == ">50K" else 0
-    )
+        df["income"] = df["income"].apply(
+            lambda x: 1 if x.strip() == ">50K" else 0
+        )
 
-    df = pd.get_dummies(df, drop_first=True)
+        df = pd.get_dummies(df, drop_first=True)
 
-    X_test = df.drop("income", axis=1)
-    y_test = df["income"]
+        X_test = df.drop("income", axis=1)
+        y_test = df["income"]
 
-    # Align columns
-    X_test = X_test.reindex(columns=feature_columns, fill_value=0)
+        # Align columns with training
+        X_test = X_test.reindex(columns=feature_columns, fill_value=0)
 
-    X_test_scaled = scaler.transform(X_test)
+        X_test_scaled = scaler.transform(X_test)
 
-    # ==========================================
-    # Predictions
-    # ==========================================
+        # ==========================================
+        # Predictions
+        # ==========================================
 
-    y_pred = selected_model.predict(X_test_scaled)
-    y_prob = selected_model.predict_proba(X_test_scaled)[:, 1]
+        y_pred = selected_model.predict(X_test_scaled)
+        y_prob = selected_model.predict_proba(X_test_scaled)[:, 1]
 
-    # ==========================================
-    # Metrics
-    # ==========================================
+        # ==========================================
+        # Metrics
+        # ==========================================
 
-    accuracy = accuracy_score(y_test, y_pred)
-    auc = roc_auc_score(y_test, y_prob)
-    precision = precision_score(y_test, y_pred)
-    recall = recall_score(y_test, y_pred)
-    f1 = f1_score(y_test, y_pred)
-    mcc = matthews_corrcoef(y_test, y_pred)
+        accuracy = accuracy_score(y_test, y_pred)
+        auc = roc_auc_score(y_test, y_prob)
+        precision = precision_score(y_test, y_pred)
+        recall = recall_score(y_test, y_pred)
+        f1 = f1_score(y_test, y_pred)
+        mcc = matthews_corrcoef(y_test, y_pred)
 
-    st.header("Evaluation Metrics")
+        st.header("Evaluation Metrics")
 
-    col1, col2, col3 = st.columns(3)
+        col1, col2, col3 = st.columns(3)
 
-    col1.metric("Accuracy", f"{accuracy:.4f}")
-    col1.metric("AUC", f"{auc:.4f}")
+        col1.metric("Accuracy", f"{accuracy:.4f}")
+        col1.metric("AUC", f"{auc:.4f}")
 
-    col2.metric("Precision", f"{precision:.4f}")
-    col2.metric("Recall", f"{recall:.4f}")
+        col2.metric("Precision", f"{precision:.4f}")
+        col2.metric("Recall", f"{recall:.4f}")
 
-    col3.metric("F1 Score", f"{f1:.4f}")
-    col3.metric("MCC", f"{mcc:.4f}")
+        col3.metric("F1 Score", f"{f1:.4f}")
+        col3.metric("MCC", f"{mcc:.4f}")
 
-    # ==========================================
-    # Confusion Matrix
-    # ==========================================
+        # ==========================================
+        # Confusion Matrix
+        # ==========================================
 
-    st.header("Confusion Matrix")
+        st.header("Confusion Matrix")
 
-    cm = confusion_matrix(y_test, y_pred)
+        cm = confusion_matrix(y_test, y_pred)
 
-    fig, ax = plt.subplots()
-    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax)
-    ax.set_xlabel("Predicted")
-    ax.set_ylabel("Actual")
+        fig, ax = plt.subplots()
+        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax)
+        ax.set_xlabel("Predicted")
+        ax.set_ylabel("Actual")
 
-    st.pyplot(fig)
+        st.pyplot(fig)
 
-    # ==========================================
-    # Classification Report
-    # ==========================================
+        # ==========================================
+        # Classification Report
+        # ==========================================
 
-    st.header("Classification Report")
+        st.header("Classification Report")
 
-    report = classification_report(y_test, y_pred, output_dict=True)
-    report_df = pd.DataFrame(report).transpose()
+        report = classification_report(y_test, y_pred, output_dict=True)
+        report_df = pd.DataFrame(report).transpose()
 
-    st.dataframe(report_df)
+        st.dataframe(report_df)
+
+    except Exception as e:
+        st.error("Error processing file. Please upload a valid adult.test formatted file.")
+        st.exception(e)
 
 else:
     st.info("Download adult.test or upload a CSV file to evaluate the model.")
