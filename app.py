@@ -127,25 +127,19 @@ if uploaded_file is not None:
         X_test_scaled = scaler.transform(X_test)
 
         # Predictions
-        y_pred = selected_model.predict(X_test_scaled)
         y_prob = selected_model.predict_proba(X_test_scaled)[:, 1]
 
-        #Debug start
-        st.subheader("🔍 Debug Information")
+        threshold = st.sidebar.slider(
+            "Classification Threshold",
+            min_value=0.0,
+            max_value=1.0,
+            value=0.5,
+            step=0.01
+        )
 
-        st.write("Shape of X_test_scaled:", X_test_scaled.shape)
-        st.write("Number of expected features:", len(feature_columns))
-        st.write("First 5 feature names:", feature_columns[:5])
-
-        st.write("Positive class rate in true labels:", np.mean(y_test))
-        st.write("Positive class prediction rate:", np.mean(y_pred))
-
-        st.write("Prediction distribution:")
-        st.write(pd.Series(y_pred).value_counts())
+        y_pred = (y_prob >= threshold).astype(int)
 
 
-
-        #Debug End
 
         # Metrics
         accuracy = accuracy_score(y_test, y_pred)
